@@ -3,15 +3,13 @@
     "version": "2.2.0",
     "description": "Returns formatting (paragraphs, etc.) to character applications, adds IP checker, and more",
     "manifest_version": 2,
-    "permissions": ["tabs"],
     "content_scripts": [
-      { "js": ["assets/jquery-3.5.1.min.js", "contentscript.js"], "css": ["assets/productivity.css"], "matches": ["https://ls-rp.com/*", "https://forum.ls-rp.com/*"] }
+      { "js": ["assets/jquery-3.5.1.min.js", "contentscript.js"], "css": ["assets/productivity.scss"], "matches": ["https://ls-rp.com/*", "https://forum.ls-rp.com/*"] }
     ],
     "background": {
       "scripts": ["assets/jquery-3.5.1.min.js", "background.js"],
-      "persistent": false
+      "persistent": true
     },
-    "web_accessible_resources": ["assets/*"],
     "icons": { 
       "16": "assets/LSRP16.png",
       "32": "assets/LSRP32.png",
