@@ -3,6 +3,18 @@
 	&:hover {
 		color: #379fef !important;
 		cursor: pointer;
+    }
+    
+    &.red {
+        color: #ee0000 !important;
+        &:hover {
+            color: #ff6666 !important;
+            cursor: pointer;
+        }
+    }
+    
+    &.bold {
+        font-weight: bold;   
 	}
 }
 

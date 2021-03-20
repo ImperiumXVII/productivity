@@ -37,12 +37,12 @@ window.onload = async function(): Promise<void> {
 
         const params = new URLSearchParams(window.location.search);
         const in_topic = (params.get('t') !== null || params.get('p') !== null);
-        const replying = params.get('mode') === "reply";
+        const replying = params.get('mode') === "reply" || params.get('mode') === "move";
 
         const in_ban_appeals = (params.get('f') === "3" || $('.crumb').find('[title="Ban Appeals"]').length !== 0);
         const in_report_player = (params.get('f') === "2" || $('.crumb').find('[title="Report Player"]').length !== 0);
 
-        if(((in_ban_appeals || in_report_player) && in_topic && !replying) || params.get('t') === "769836") {
+        if(((in_ban_appeals || in_report_player) && !replying) || params.get('t') === "769836") {
             const page_inner = document.getElementsByClassName('page-body-inner')[0] as HTMLElement;
             Productivity.page_body = document.getElementsByClassName('page-body')[0] as HTMLElement;
             
@@ -76,6 +76,7 @@ window.onload = async function(): Promise<void> {
                 Productivity.main.style.backgroundColor = '#1F1F1F';
                 unselected.textContent = "Hey! It's my home! Thanks for checking back!";
                 unselected.style.color = '#F1F1F1';
+                unselected.style.marginBottom = '30px';
                 Productivity.mainhider.style.display = 'none';
                 const child = document.getElementsByClassName('page-body-inner')[0];
                 Productivity.main.appendChild(child);
@@ -88,6 +89,13 @@ window.onload = async function(): Promise<void> {
                     icons[icon].classList.remove('icon-black');
                 }
                 document.getElementById('phpbb').style.backgroundColor = '#77A';
+                (document.getElementsByClassName('postprofile')[0] as HTMLElement).style.display = 'none';
+                (document.getElementsByClassName('first')[0] as HTMLElement).style.display = 'none';
+                (document.getElementsByClassName('author')[0] as HTMLElement).style.display = 'none';
+                (document.getElementsByClassName('action-bar')[0] as HTMLElement).style.display = 'none';
+                (document.getElementsByClassName('postbody')[0] as HTMLElement).style.width = '100%';
+                (document.getElementsByClassName('content')[0] as HTMLElement).style.borderTop = 'none';
+                (document.getElementsByClassName('content')[0].getElementsByTagName('center')[0] as HTMLElement).style.display = 'none';
             } else if(in_ban_appeals && !in_topic) {
                 const unselected = document.createElement('div');
                 unselected.id = "unselected";
@@ -99,6 +107,20 @@ window.onload = async function(): Promise<void> {
                 const selected = document.createElement('div');
                 selected.id = "selected";
                 Productivity.main.appendChild(selected);
+                const lookup_override_div = document.createElement('div');
+                lookup_override_div.classList.add('lookup_override_div');
+                lookup_override_div.id = 'lookup_override_div';
+                const override_info = document.createElement('input');
+                override_info.id = 'override_info';
+                override_info.type = "search";
+                override_info.placeholder = 'Lookup another character...';
+                override_info.addEventListener('keyup', async event => {
+                    if(event.key === 'Enter') {
+                        await createAdminRecord(override_info.value);
+                    }
+                })
+                lookup_override_div.appendChild(override_info);
+                Productivity.main.insertBefore(lookup_override_div, selected);
                 const first_line = $('.content').text().split('\n')[0];
                 const unfiltered_name = first_line.split(':')[1].trim();
                 let filtered_name = unfiltered_name;
@@ -112,82 +134,7 @@ window.onload = async function(): Promise<void> {
                         break;
                     }
                 }
-                const result = await getAdminRecord(filtered_name);
-                const currently_banned = document.createElement('span');
-                currently_banned.classList.add('currently_');
-                if(result.currently_banned) {
-                    currently_banned.classList.add('_banned');
-                    currently_banned.textContent = `${filtered_name.toUpperCase()} IS CURRENTLY BANNED`;
-                } else {
-                    currently_banned.textContent = `${filtered_name.toUpperCase()} IS NOT CURRENTLY BANNED`;
-                }
-                selected.appendChild(currently_banned);
-                const holders: Array<HTMLElement> = [];
-                holders[0] = document.createElement('div');
-                holders[0].id = 'ban-holder';
-                holders[0].classList.add('holder');
-                result.record[0].classList.add('adminrecord');
-                holders[0].appendChild(result.record[0]);
-                
-                holders[1] = document.createElement('div');
-                holders[1].id = 'kick-holder';
-                holders[1].classList.add('holder');
-                result.record[1].classList.add('adminrecord');
-                holders[1].appendChild(result.record[1]);
-
-                holders[2] = document.createElement('div');
-                holders[2].id = 'jail-holder';
-                holders[2].classList.add('holder');
-                result.record[2].classList.add('adminrecord');
-                holders[2].appendChild(result.record[2]);
-
-                selected.appendChild(holders[0]);
-                selected.appendChild(holders[1]);
-                selected.appendChild(holders[2]);
-
-                const char_cell: HTMLTableCellElement[] = [];
-                const promise_chars: Promise<string>[] = [];
-                const tr = selected.getElementsByTagName('tr');
-                let addedPlus = false;
-                for(let trs = 0, trs2 = tr.length; trs < trs2; trs++) {
-                    const th = tr[trs].getElementsByTagName('th');
-                    for(let ths = 0, ths2 = th.length; ths < ths2; ths++) {
-                        th[ths].classList.add('header');
-                        if(ths === ths2-1) {
-                            th[ths].style.display = 'none';
-                        }
-                    }
-                    const td = tr[trs].getElementsByTagName('td');
-                    if(td[0] && !addedPlus) {
-                        addedPlus = true;
-                        char_cell.push(td[0]);
-                        promise_chars.push(getUsername(td[0].textContent));
-                    }
-                    for(let tds = 0, tds2 = td.length; tds < tds2; tds++) {
-                        if(tds === tds2-1) {
-                            td[tds].style.display = 'none';
-                        }
-                    }
-                }
-
-                const resolved_chars = await Promise.all(promise_chars);
-                let idx = 0;
-                let addElem;
-                for(const c of char_cell) {
-                    c.textContent = c.textContent + ` (${resolved_chars[idx]})`;
-                    addElem = c.nextElementSibling.nextElementSibling;
-                    if(c.parentElement.parentElement.parentElement.parentElement.id === 'ban-holder') {
-                        addElem.innerHTML = addElem.innerHTML + '<span id="addToPost" data-eva="plus-outline" data-eva-fill="green" data-eva-height="18" data-eva-animation="pulse" data-eva-hover="false" data-eva-infinite="true" style="float:right;"></span>';
-                    }
-                    idx++;
-                }
-                eva.replace();
-                const addToPostElem = $('#addToPost').get(0);
-                if(addToPostElem) {
-                    addToPostElem.addEventListener('click', () => {
-                        addToPost(addToPostElem.parentElement.previousElementSibling.previousElementSibling as HTMLElement);
-                    });
-                }
+                await createAdminRecord(filtered_name);
             }
         }
 
@@ -298,7 +245,7 @@ window.onload = async function(): Promise<void> {
                     tester = tester.replace(' ', '_');
                     const character = tester;
                     await $.get('https://ls-rp.com/?page=profile&select=administration&option=lookup&p=' + tester, (res) => {
-                        let username;
+                        let username: string | string[];
                         username = $(res).text();
                         username = username.slice(username.indexOf('MAIN ACCOUNT USERNAME: ')+23);
                         username = username.slice(0, username.indexOf(' ')-1);
@@ -314,7 +261,7 @@ window.onload = async function(): Promise<void> {
                     tester = tester.replace(' ', '_');
                     const character = tester;
                     await $.get('https://ls-rp.com/?page=profile&select=administration&option=lookup&p=' + tester, (res) => {
-                        let username;
+                        let username: string | string[];
                         username = $(res).text();
                         username = username.slice(username.indexOf('MAIN ACCOUNT USERNAME: ')+23);
                         username = username.slice(0, username.indexOf(' ')-1);
@@ -326,7 +273,7 @@ window.onload = async function(): Promise<void> {
             }
             const page_urls = document.getElementsByTagName('a');
             const images = document.getElementsByTagName('img');
-            let imgtag;
+            let imgtag: HTMLElement;
             for(let x = 0, x2 = images.length; x < x2; x++) {
                 if(images[x].src === undefined) continue;
                 if(images[x].src.includes('images/flags/')) {
@@ -366,6 +313,7 @@ window.onload = async function(): Promise<void> {
                 textarea.outerHTML = document.querySelector('div#_alert').outerHTML;
             }
         } else if(title === "Los Santos Roleplay UCP • User lookup") {
+            let original_character!: string;
             const titles = document.getElementsByClassName('s-info');
             const params = new URLSearchParams(window.location.search);
             let username: string;
@@ -384,6 +332,35 @@ window.onload = async function(): Promise<void> {
                         select.id = 'charnames';
                         const option = [];
                         const char_name_array = char_names.split(', ');
+                        original_character = await findNameChanges(char_name_array[0], true) as string;
+                        const imgs = $('.cont').find('img');
+                        for(const i of imgs) {
+                            if(i.src === 'https://ls-rp.com/images/go_friend.gif') {
+                                i.style.display = 'none';
+                                if(i.parentElement.textContent === " Admin jail" || i.parentElement.textContent === " Ban") {
+                                    i.parentElement.classList.add('tester_link', 'red', 'bold');
+                                    i.parentElement.innerHTML = '<span data-eva="link-2-outline" data-eva-fill="red" data-eva-height="14"></span>' + i.parentElement.innerHTML.replace('> ', '>');
+                                } else {
+                                    i.parentElement.classList.add('tester_link', 'bold');
+                                    if(i.parentElement.textContent === " Character Applications") {
+                                        const newdiv = i.parentElement.cloneNode(true);
+                                        i.parentElement.parentElement.insertBefore(newdiv, i.parentElement.nextElementSibling);
+                                        newdiv.textContent = 'Get Original Application';
+                                        const breaker = document.createElement('br');
+                                        const span = document.createElement('span');
+                                        span.setAttribute('data-eva', 'link-2-outline');
+                                        span.setAttribute('data-eva-fill', '#0077EE');
+                                        span.setAttribute('data-eva-height', '14');
+                                        newdiv.insertBefore(span, newdiv.childNodes[0]);
+                                        (newdiv as HTMLAnchorElement).href = "?page=profile&select=administration&option=arch&s&cname=" + original_character;
+                                        i.parentElement.parentElement.insertBefore(breaker, newdiv);
+                                    }
+                                    i.parentElement.innerHTML = '<span data-eva="link-2-outline" data-eva-fill="#0077EE" data-eva-height="14"></span>' + i.parentElement.innerHTML.replace('> ', '>');
+                                }
+                            }
+                        }
+                        eva.replace();
+
                         for(let y = 0, y2 = char_name_array.length; y < y2; y++) {
                             option[y] = document.createElement('option');
                             if(char_name_array[y] === params.get('u_name')) option[y].disabled = true;
@@ -409,7 +386,8 @@ window.onload = async function(): Promise<void> {
                         eva.replace();
                         lookup.addEventListener('click', () => {
                             LookUpCharacter(select.options[select.selectedIndex].value);
-                        })
+                        });
+
                         const vehicles = document.getElementsByClassName('notice');
                         const bigcount: Array<number> = [];
                         const bigpcount: Array<number> = [];
@@ -687,7 +665,7 @@ window.onload = async function(): Promise<void> {
                         tester = tester.replace(' ', '_');
                         const character = tester;
                         await $.get('https://ls-rp.com/?page=profile&select=administration&option=lookup&p=' + tester, (res) => {
-                            let username;
+                            let username: string | string[];
                             username = $(res).text();
                             username = username.slice(username.indexOf('MAIN ACCOUNT USERNAME: ')+23);
                             username = username.slice(0, username.indexOf(' ')-1);
@@ -701,7 +679,7 @@ window.onload = async function(): Promise<void> {
                         tester = tester.replace(' ', '_');
                         const character = tester;
                         await $.get('https://ls-rp.com/?page=profile&select=administration&option=lookup&p=' + tester, (res) => {
-                            let username;
+                            let username: string | string[];
                             username = $(res).text();
                             username = username.slice(username.indexOf('MAIN ACCOUNT USERNAME: ')+23);
                             username = username.slice(0, username.indexOf(' ')-1);
@@ -1032,7 +1010,7 @@ function ProcessArchive(appid: number, noduplicates: boolean): void {
     }
 }
 
-function HideAnn(id) {
+function HideAnn(id: string | number) {
 	if(document.getElementById('notice'+id).style.maxHeight != Productivity.height[id] + "px") {
 		document.getElementById('notice'+id).style.maxHeight = Productivity.height[id] + "px";
 		document.getElementById('hide'+id).textContent = '[HIDE]';
@@ -1042,15 +1020,7 @@ function HideAnn(id) {
 	}
 }
 
-function isPlayerLoggedIntoUCP() {
-    return new Promise((resolve) => {
-        chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'check_ucp' }, (response) => { 
-            resolve(response.ucp_open);
-        });
-    });
-}
-
-async function getAdminRecord(name: string): Promise<Record<string, unknown>> {
+async function getAdminRecord(name: string, date: string): Promise<Record<string, unknown>> {
     const prom = new Promise<string>((resolve) => {
         chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'lookup', lookup_target: name }, (response) => { 
             resolve(response.lookup);
@@ -1071,10 +1041,11 @@ async function getAdminRecord(name: string): Promise<Record<string, unknown>> {
             res[x] = html[x];
         }
     }
-    return { record: res, currently_banned: currently_banned };
+    const result = (res[0] !== "User not found")?({ record: res, currently_banned: currently_banned, name: [name, date] }):(await findBannedCharacterStatus(name));
+    return result;
 }
 
-async function findNameChanges(name) {
+async function findNameChanges(name: string, firstname = false): Promise<string[] | string> {
     const prom = new Promise<string>((resolve) => {
         chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'namechanges', lookup_target: name, }, (response) => { 
             resolve(response.lookup);
@@ -1084,13 +1055,20 @@ async function findNameChanges(name) {
     rawdata = rawdata.replace(/<img/g, '<noload').replace(/<\/img/g, '</noload');
     const data = $(rawdata);
     if(data.find('.table_sort')[0] === undefined || data.text().includes('No namechanges related to')) {
-        return "Unknown";
+        return ["Unknown", "1970-01-01 00:00:00"];
     }
-    const new_name = data.find('.table_sort')[0].getElementsByTagName('td')[2].textContent;
-    return new_name;
+    if(firstname == false) {
+        const new_name = data.find('.table_sort')[0].getElementsByTagName('td')[2].textContent;
+        const date = data.find('.table_sort')[0].getElementsByTagName('td')[3].textContent;
+        return [new_name, date] as string[];
+    } else {
+        const td = data.find('.table_sort')[0].getElementsByTagName('td');
+        const first_name = td[td.length-3].textContent;
+        return first_name as string;
+    }
 }
 
-async function getUsername(character): Promise<string> {
+async function getUsername(character: string): Promise<string> {
     const prom = new Promise<string>((resolve) => {
         chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'lookup', lookup_target: character, }, (response) => { 
             resolve(response.lookup);
@@ -1163,7 +1141,7 @@ async function checkBans(elem: Element) {
 	}
 }
 
-async function handleAbuse(data, elem, parent) {
+async function handleAbuse(data: { active_vpn: boolean; vpn: boolean; active_tor: boolean; tor: boolean; proxy: boolean; fraud_score: number; mobile: boolean; country_code: string; }, elem: HTMLElement, parent: HTMLElement | HTMLImageElement) {
 	if(document.title === "Los Santos Roleplay UCP • Applications Overview") {
 		if(data.active_vpn || data.vpn) {
 			elem.outerHTML = elem.outerHTML + ' - <a target="_blank" href="https://www.ipqualityscore.com/vpn-ip-address-check/lookup/' + elem.textContent + '">possible VPN</a> <span data-eva="shield-off-outline" data-eva-fill="red" data-eva-height="18" style="float: right; margin-right: .1em;"></span>';
@@ -1198,10 +1176,10 @@ async function handleAbuse(data, elem, parent) {
 		} else {
 			elem.outerHTML = elem.outerHTML + ' (nothing detected) <span data-eva="checkmark-circle-outline" title="Nothing Detected" data-eva-fill="#00AA00" data-eva-height="18" style="float: left; margin-right: .2em; margin-left:-0.4em"></span>';
 		}
-		parent.src = 'images/flags/' + data.country_code.toLowerCase() + '.png';
-		parent.style.marginRight = '2px';
-		parent.title = data.country_code;
-		parent.alt = data.country_code;
+		(parent as HTMLImageElement).src = 'images/flags/' + data.country_code.toLowerCase() + '.png';
+		(parent as HTMLImageElement).style.marginRight = '2px';
+		(parent as HTMLImageElement).title = data.country_code;
+		(parent as HTMLImageElement).alt = data.country_code;
 	}
 	eva.replace();
 }
@@ -1218,7 +1196,7 @@ async function checkDuplicates(name: string, table: HTMLElement) {
 }
 
 async function getUCPName(name: string, cell: HTMLElement) {
-    let username: string, newCell: HTMLElement;
+    let username: string;
     await $.get('https://ls-rp.com/?page=profile&select=administration&option=lookup&u_lookup=Lookup+this+user&u_name=' + name, (data) => {
         const text = $(data).text();
         username = text.slice(text.indexOf('MAIN ACCOUNT USERNAME: ')+23);
@@ -1279,16 +1257,16 @@ async function CountApps(name: string, elem: HTMLElement) {
 	eva.replace();
 }
 
-function LookUpCharacter(character) {
+function LookUpCharacter(character: string): void {
 	window.location.href = "https://ls-rp.com/?page=profile&select=administration&option=lookup&u_lookup=Lookup+this+user&u_name=" + character;
 }
 
-function round(value, precision) {
+function round(value: number, precision: number): number {
     const multiplier = Math.pow(10, precision || 0);
     return Math.round(value * multiplier) / multiplier;
 }
 
-function HideDiv(div: HTMLElement, hider: HTMLElement) {
+function HideDiv(div: HTMLElement, hider: HTMLElement): void {
     if(div.style.maxHeight != Productivity.height[div.id] + "px") {
 		div.style.maxHeight = Productivity.height[div.id] + "px";
 		hider.textContent = '[HIDE]';
@@ -1296,4 +1274,113 @@ function HideDiv(div: HTMLElement, hider: HTMLElement) {
 		div.style.maxHeight = 24 + "px";
 		hider.textContent = '[SHOW]';
 	}
+}
+
+async function findBannedCharacterStatus(name: string): Promise<Record<string, unknown>> {
+    const realName = await findNameChanges(name);
+    let result!: Record<string, unknown>;
+    if(realName[0] !== "Unknown") {
+        result = await getAdminRecord(realName[0], realName[1]);
+    } else {
+        result = { record: ["User not found", "", ""], currently_banned: false, name: ["User not found", "1970-01-01 00:00:00"] };
+    }
+    return result;
+}
+
+async function createAdminRecord(filtered_name: string): Promise<void> {
+    const result = await getAdminRecord(filtered_name, '1970-01-01 00:00:00');
+    const currently_banned = document.createElement('span');
+    currently_banned.classList.add('currently_');
+    if(result.currently_banned) {
+        currently_banned.classList.add('_banned');
+        if(result.name[0] as string === filtered_name) {
+            currently_banned.textContent = `${(result.name[0] as string).toUpperCase()} IS CURRENTLY BANNED`;
+        } else {
+            currently_banned.innerHTML = `${(result.name[0] as string).toUpperCase()} IS CURRENTLY BANNED<br /><span style="color: #AA6600">${filtered_name.toUpperCase()} NAME CHANGED TO ${(result.name[0] as string).toUpperCase()} ON ${result.name[1].split(' ')[0]}</span>`;
+        }
+    } else {
+        if(result.record[0] === "User not found") {
+            currently_banned.textContent = `${filtered_name.toUpperCase()} NOT FOUND - NO NAME CHANGES FOUND`;
+            currently_banned.classList.add('_not-found');
+        } else {
+            if(result.name[0] as string === filtered_name) {
+                currently_banned.textContent = `${(result.name[0] as string).toUpperCase()} IS NOT CURRENTLY BANNED`;
+            } else {
+                currently_banned.innerHTML = `${(result.name[0] as string).toUpperCase()} IS NOT CURRENTLY BANNED<br /><span style="color: #AA6600">${filtered_name.toUpperCase()} NAME CHANGED TO ${(result.name[0] as string).toUpperCase()} ON ${result.name[1].split(' ')[0]}</span>`;
+            }
+        }
+    }
+    const selected = document.getElementById('selected');
+    if(selected.innerHTML.length !== 0) {
+        $(selected).children().remove();
+    }
+    selected.appendChild(currently_banned);
+    if(!currently_banned.classList.contains('_not-found')) {
+        const holders: Array<HTMLElement> = [];
+        holders[0] = document.createElement('div');
+        holders[0].id = 'ban-holder';
+        holders[0].classList.add('holder');
+        result.record[0].classList.add('adminrecord');
+        holders[0].appendChild(result.record[0]);
+        
+        holders[1] = document.createElement('div');
+        holders[1].id = 'kick-holder';
+        holders[1].classList.add('holder');
+        result.record[1].classList.add('adminrecord');
+        holders[1].appendChild(result.record[1]);
+
+        holders[2] = document.createElement('div');
+        holders[2].id = 'jail-holder';
+        holders[2].classList.add('holder');
+        result.record[2].classList.add('adminrecord');
+        holders[2].appendChild(result.record[2]);
+
+        selected.appendChild(holders[0]);
+        selected.appendChild(holders[1]);
+        selected.appendChild(holders[2]);
+
+        const char_cell: HTMLTableCellElement[] = [];
+        const promise_chars: Promise<string>[] = [];
+        const tr = selected.getElementsByTagName('tr');
+        let addedPlus = false;
+        for(let trs = 0, trs2 = tr.length; trs < trs2; trs++) {
+            const th = tr[trs].getElementsByTagName('th');
+            for(let ths = 0, ths2 = th.length; ths < ths2; ths++) {
+                th[ths].classList.add('header');
+                if(ths === ths2-1) {
+                    th[ths].style.display = 'none';
+                }
+            }
+            const td = tr[trs].getElementsByTagName('td');
+            if(td[0] && !addedPlus) {
+                addedPlus = true;
+                char_cell.push(td[0]);
+                promise_chars.push(getUsername(td[0].textContent));
+            }
+            for(let tds = 0, tds2 = td.length; tds < tds2; tds++) {
+                if(tds === tds2-1) {
+                    td[tds].style.display = 'none';
+                }
+            }
+        }
+
+        const resolved_chars = await Promise.all(promise_chars);
+        let idx = 0;
+        let addElem: Element;
+        for(const c of char_cell) {
+            c.textContent = c.textContent + ` (${resolved_chars[idx]})`;
+            addElem = c.nextElementSibling.nextElementSibling;
+            if(c.parentElement.parentElement.parentElement.parentElement.id === 'ban-holder') {
+                addElem.innerHTML = addElem.innerHTML + '<span id="addToPost" data-eva="plus-outline" data-eva-fill="green" data-eva-height="18" data-eva-animation="pulse" data-eva-hover="false" data-eva-infinite="true" style="float:right;"></span>';
+            }
+            idx++;
+        }
+        eva.replace();
+        const addToPostElem = $('#addToPost').get(0);
+        if(addToPostElem) {
+            addToPostElem.addEventListener('click', () => {
+                addToPost(addToPostElem.parentElement.previousElementSibling.previousElementSibling as HTMLElement);
+            });
+        }
+    }
 }
