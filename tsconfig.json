@@ -1,0 +1,13 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+      "target": "esnext",
+      "module": "esnext",
+      "sourceMap": false,
+      "types": ["@types/chrome", "@types/jquery"],
+      "typeRoots": ["node_modules/@types"],
+      "moduleResolution": "node",
+      "lib": ["esnext", "dom"]
+    },
+    "include": ["src/background", "src/contentscript"]
+  }
