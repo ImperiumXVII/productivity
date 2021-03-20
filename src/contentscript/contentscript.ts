@@ -332,7 +332,7 @@ window.onload = async function(): Promise<void> {
                         select.id = 'charnames';
                         const option = [];
                         const char_name_array = char_names.split(', ');
-                        original_character = await findNameChanges(char_name_array[0], true) as string;
+                        original_character = await findNameChanges(char_name_array[0], true, false) as string;
                         const imgs = $('.cont').find('img');
                         for(const i of imgs) {
                             if(i.src === 'https://ls-rp.com/images/go_friend.gif') {
@@ -809,7 +809,7 @@ window.onload = async function(): Promise<void> {
                         link.removeAttribute('href');
                         link.parentElement.nextElementSibling.textContent = '';
                     } else {
-                        username.push(getUsername(link.innerText));
+                        username.push(getUsername(link.innerText, false));
                         linkarr.push(link.parentElement.nextElementSibling);
                         if(link.parentElement.style.backgroundColor === 'rgb(255, 221, 221)') {
                             link.classList.add('banned_ip');
@@ -1045,12 +1045,21 @@ async function getAdminRecord(name: string, date: string): Promise<Record<string
     return result;
 }
 
-async function findNameChanges(name: string, firstname = false): Promise<string[] | string> {
-    const prom = new Promise<string>((resolve) => {
-        chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'namechanges', lookup_target: name, }, (response) => { 
-            resolve(response.lookup);
+async function findNameChanges(name: string, firstname = false, background_service = true): Promise<string[] | string> {
+    let prom: Promise<string>;
+    if(background_service) {
+        prom = new Promise<string>((resolve) => {
+            chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'namechanges', lookup_target: name, }, (response) => { 
+                resolve(response.lookup);
+            });
         });
-    });
+    } else {
+        prom = new Promise<string>((resolve) => {
+            $.get('https://ls-rp.com/?page=profile&select=administration&option=searchnames&search_submit=Search%21&lookup_name=' + name, (data: string) => {
+                resolve(data);
+            });
+        });
+    }
     let rawdata = await prom;
     rawdata = rawdata.replace(/<img/g, '<noload').replace(/<\/img/g, '</noload');
     const data = $(rawdata);
@@ -1068,12 +1077,21 @@ async function findNameChanges(name: string, firstname = false): Promise<string[
     }
 }
 
-async function getUsername(character: string): Promise<string> {
-    const prom = new Promise<string>((resolve) => {
-        chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'lookup', lookup_target: character, }, (response) => { 
-            resolve(response.lookup);
+async function getUsername(character: string, background_service = true): Promise<string> {
+    let prom: Promise<string>;
+    if(background_service) {
+        prom = new Promise<string>((resolve) => {
+            chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'lookup', lookup_target: character, }, (response) => { 
+                resolve(response.lookup);
+            });
         });
-    });
+    } else {
+        prom = new Promise<string>((resolve) => {
+            $.get('https://ls-rp.com/?page=profile&select=administration&option=lookup&u_lookup=Lookup+this+user&u_name=' + character, (data: string) => {
+                resolve(data);
+            });
+        });
+    }
     let rawdata = await prom;
     rawdata = rawdata.replace(/<img/g, '<noload').replace(/<\/img/g, '</noload');
     const data = $(rawdata);
