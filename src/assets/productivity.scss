@@ -24,36 +24,40 @@ table {
 
     }
 
-    &.admin_record {
+    &.adminrecord {
 
-        &.tablesorter {
+        &.tablesorter.table_sort {
             margin: 0px;
             overflow-y: hidden;
-        }
-
-        tr {
-            height: 25px;
-            td {
-                border-width: 1px;
-                border-style: solid;
-                border-color: lightgrey !important;
-                padding-top: 6px !important;
-                padding-left: 8px !important;
-                font-family: 'Ubuntu' !important;
-                font-size: 9pt;
-            }
-            th {
-                border-width: 1px;
-                border-style: solid;
-                border-color: lightgrey !important;
-                padding-top: 6px !important;
-                padding-left: 8px !important;
-                font-family: 'Ubuntu' !important;
-                font-size: 9pt;
+            tr {
+                height: 25px;
+                > td {
+                    border-width: 1px;
+                    border-style: solid;
+                    border-color: lightgrey !important;
+                    padding-top: 6px !important;
+                    padding-left: 8px !important;
+                    font-family: 'Ubuntu' !important;
+                    font-size: 9pt;
+                }
+                > th {
+                    border-width: 1px;
+                    border-style: solid;
+                    border-color: lightgrey !important;
+                    padding-top: 6px !important;
+                    padding-left: 8px !important;
+                    font-size: 9pt;
+                }
             }
         }
     }
 
+}
+
+#addToPost {
+    &:hover {
+        cursor: pointer;
+    }
 }
 
 a {
@@ -149,20 +153,157 @@ div {
         padding: 20px;
         border-radius: 5px;
         background-color: #DDDDFF;
+        position: relative;
+        overflow-y: hidden;
+        transition: max-height 0.5s ease;
+
+        .post {
+
+            background-color:#333;
+
+            .content {
+                color: #ddd;
+
+                blockquote {
+                    background-color: #111;
+                }
+
+            }
+
+            a, p.author, .signature {
+                @extend .content;
+            }
+
+            .postprofile {
+                @extend .content;
+                strong {
+                    color: #AAA;
+                }
+            }
+        }
+
+        .panel {
+            @extend .post;
+            color: #CCC;
+
+            #message-box.message-box {
+                textarea {
+                    background-color: #111;
+                    color:#CCC;
+
+                    &::placeholder, &::-ms-input-placeholder {
+                        color: #666;
+                    }
+
+                }
+            }
+
+            .inner input {
+                background-color: #111;
+                color:#CCC;
+            }
+
+            h2 {
+                color: #aaa;
+            }
+        }
+
+        .jumpbox-return {
+            @extend .panel;
+        }
+
+        .pagination {
+            background-color: #1f1f1f;
+            color: #aaa;
+        }
+
+        > .hider {
+            display: block;
+            font-weight: bold;
+            right: 15px;
+            top: 15px;
+            z-index: 2;
+            position: absolute;
+        }
+
+        :not(&) .hider {
+            display: block;
+            font-weight: bold;
+            right: 15px;
+            z-index: 2;
+            position: absolute;
+        }
+    
+        .holder {
+            display: block;
+            overflow: hidden;
+            padding-top: 12px;
+            transition: max-height 1s linear;
+        }
+        
+        .lookup_override_div {
+            display: block;
+            margin: auto;
+            width: 100%;
+            padding-bottom: 24px;
+            input {
+                display: block;
+                margin: auto;
+            }
+        }
+    
+        .override_info {
+            display: block;
+            margin: auto;
+            text-align: center;
+            padding-top: 15px;
+            font-weight: bold;
+            color: red;
+            text-transform: uppercase;
+        }
+    
+        #holders_hider {
+            display: block;
+            float: none;
+            left: 1060px;
+            position: relative;
+        }
 
         #unselected {
             width: 100%;
             margin: auto;
             text-align: center;
-            display: inline-block;
+            display: block;
+            z-index: 1;
             position: relative;
             color: black;
+        }
+
+        #selected {
+            @extend #unselected;
             
             &.no_ucp {
                 font-weight: 700;
                 color: red;
                 text-decoration: underline;
                 font-size: 1.5em;
+            }
+
+            .currently_ {
+                @extend #unselected; 
+                margin-top: 15px;
+                margin-bottom: 15px;
+                color: green;
+                font-weight: bold;
+                
+                &._not-found {
+                    color: royalblue;
+                }
+        
+                &._banned {
+                    color: red;
+                }
+        
             }
         }
 
@@ -175,61 +316,6 @@ div {
                 padding-bottom: 1em;
             }
         }
-        .currently_ {
-            @extend #unselected; 
-            margin-top: 15px;
-            margin-bottom: 15px;
-            color: green;
-            font-weight: bold;
-            
-            &._not-found {
-                color: royalblue;
-            }
-    
-            &._banned {
-                color: red;
-            }
-    
-        }
-    }
-
-    &.hider {
-        font-weight: bold;
-        float: right;
-    }
-
-    &.holder {
-        display: block;
-        overflow: hidden;
-        padding-top: 12px;
-    }
-    
-    &.lookup_override_div {
-        display: block;
-        margin: auto;
-        width: 100%;
-        padding-bottom: 24px;
-        input {
-            display: block;
-            margin: auto;
-        }
-    }
-
-    &.override_info {
-        display: block;
-        margin: auto;
-        text-align: center;
-        padding-top: 15px;
-        font-weight: bold;
-        color: red;
-        text-transform: uppercase;
-    }
-
-    &#holders_hider {
-        display: block;
-        float: none;
-        left: 1060px;
-        position: relative;
     }
 
     &.app_answer {

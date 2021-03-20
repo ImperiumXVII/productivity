@@ -35,12 +35,161 @@ window.onload = async function(): Promise<void> {
             head.appendChild(link);
         }
 
-        Productivity.page_body = document.getElementsByClassName('page-body')[0] as HTMLElement;
-        Productivity.main = document.createElement('div');
-        Productivity.main.id = "productivity-main";
-        Productivity.main.classList.add('productivity-main')
-        const page_inner = document.getElementsByClassName('page-body-inner')[0] as HTMLElement;
-        Productivity.page_body.insertBefore(Productivity.main, page_inner);
+        const params = new URLSearchParams(window.location.search);
+        const in_topic = (params.get('t') !== null || params.get('p') !== null);
+        const replying = params.get('mode') === "reply";
+
+        const in_ban_appeals = (params.get('f') === "3" || $('.crumb').find('[title="Ban Appeals"]').length !== 0);
+        const in_report_player = (params.get('f') === "2" || $('.crumb').find('[title="Report Player"]').length !== 0);
+
+        if(((in_ban_appeals || in_report_player) && in_topic && !replying) || params.get('t') === "769836") {
+            const page_inner = document.getElementsByClassName('page-body-inner')[0] as HTMLElement;
+            Productivity.page_body = document.getElementsByClassName('page-body')[0] as HTMLElement;
+            
+            Productivity.main = document.createElement('div');
+            Productivity.main.id = "productivity-main";
+            Productivity.main.classList.add('productivity-main')
+            Productivity.main.style.maxHeight = 2048 + 'px';
+            Productivity.height[Productivity.main.id] = 2048;
+            Productivity.page_body.insertBefore(Productivity.main, page_inner);
+            
+            const titlediv = document.createElement('span');
+            titlediv.id = 'titlediv';
+            const titlediv_strong = document.createElement('strong');
+            titlediv_strong.textContent = "productivity++";
+            Productivity.main.insertBefore(titlediv, null);
+            titlediv.insertBefore(titlediv_strong, null);
+
+            Productivity.mainhider = document.createElement('span');
+            Productivity.mainhider.textContent = '[HIDE]';
+            Productivity.mainhider.classList.add('tester_link', 'hider');
+            Productivity.main.appendChild(Productivity.mainhider);
+
+            Productivity.mainhider.addEventListener('click', () => {
+                HideDiv(Productivity.main, Productivity.mainhider)
+            });
+
+            if(params.get('t') === "769836") {
+                const unselected = document.createElement('div');
+                unselected.id = "unselected";
+                Productivity.main.appendChild(unselected);
+                Productivity.main.style.backgroundColor = '#1F1F1F';
+                unselected.textContent = "Hey! It's my home! Thanks for checking back!";
+                unselected.style.color = '#F1F1F1';
+                Productivity.mainhider.style.display = 'none';
+                const child = document.getElementsByClassName('page-body-inner')[0];
+                Productivity.main.appendChild(child);
+                Productivity.main.style.maxHeight = '';
+                (document.getElementById('message-box').children[0] as HTMLTextAreaElement).placeholder = 'Say something nice about ImperiumXVII? 😊';
+                const icons = document.getElementsByClassName('icon-black');
+                for(let icon = 0, iconlen = icons.length; icon < iconlen; icon++) {
+                    if(icons[icon] === undefined) continue;
+                    icons[icon].classList.add('icon-grey');
+                    icons[icon].classList.remove('icon-black');
+                }
+                document.getElementById('phpbb').style.backgroundColor = '#77A';
+            } else if(in_ban_appeals && !in_topic) {
+                const unselected = document.createElement('div');
+                unselected.id = "unselected";
+                Productivity.main.appendChild(unselected);
+                unselected.textContent = "No ban appeal open.";
+                Productivity.main.style.maxHeight = Productivity.main.offsetHeight + 'px';
+                Productivity.height[Productivity.main.id] = Productivity.main.offsetHeight;
+            } else if(in_ban_appeals && in_topic) {
+                const selected = document.createElement('div');
+                selected.id = "selected";
+                Productivity.main.appendChild(selected);
+                const first_line = $('.content').text().split('\n')[0];
+                const unfiltered_name = first_line.split(':')[1].trim();
+                let filtered_name = unfiltered_name;
+                if(!unfiltered_name.includes('_')) {
+                    filtered_name = unfiltered_name.replace(' ', '_');
+                }
+                const filtered_names = filtered_name.split(' ');
+                for(const f of filtered_names) {
+                    if(f.includes('_')) {
+                        filtered_name = f;
+                        break;
+                    }
+                }
+                const result = await getAdminRecord(filtered_name);
+                const currently_banned = document.createElement('span');
+                currently_banned.classList.add('currently_');
+                if(result.currently_banned) {
+                    currently_banned.classList.add('_banned');
+                    currently_banned.textContent = `${filtered_name.toUpperCase()} IS CURRENTLY BANNED`;
+                } else {
+                    currently_banned.textContent = `${filtered_name.toUpperCase()} IS NOT CURRENTLY BANNED`;
+                }
+                selected.appendChild(currently_banned);
+                const holders: Array<HTMLElement> = [];
+                holders[0] = document.createElement('div');
+                holders[0].id = 'ban-holder';
+                holders[0].classList.add('holder');
+                result.record[0].classList.add('adminrecord');
+                holders[0].appendChild(result.record[0]);
+                
+                holders[1] = document.createElement('div');
+                holders[1].id = 'kick-holder';
+                holders[1].classList.add('holder');
+                result.record[1].classList.add('adminrecord');
+                holders[1].appendChild(result.record[1]);
+
+                holders[2] = document.createElement('div');
+                holders[2].id = 'jail-holder';
+                holders[2].classList.add('holder');
+                result.record[2].classList.add('adminrecord');
+                holders[2].appendChild(result.record[2]);
+
+                selected.appendChild(holders[0]);
+                selected.appendChild(holders[1]);
+                selected.appendChild(holders[2]);
+
+                const char_cell: HTMLTableCellElement[] = [];
+                const promise_chars: Promise<string>[] = [];
+                const tr = selected.getElementsByTagName('tr');
+                let addedPlus = false;
+                for(let trs = 0, trs2 = tr.length; trs < trs2; trs++) {
+                    const th = tr[trs].getElementsByTagName('th');
+                    for(let ths = 0, ths2 = th.length; ths < ths2; ths++) {
+                        th[ths].classList.add('header');
+                        if(ths === ths2-1) {
+                            th[ths].style.display = 'none';
+                        }
+                    }
+                    const td = tr[trs].getElementsByTagName('td');
+                    if(td[0] && !addedPlus) {
+                        addedPlus = true;
+                        char_cell.push(td[0]);
+                        promise_chars.push(getUsername(td[0].textContent));
+                    }
+                    for(let tds = 0, tds2 = td.length; tds < tds2; tds++) {
+                        if(tds === tds2-1) {
+                            td[tds].style.display = 'none';
+                        }
+                    }
+                }
+
+                const resolved_chars = await Promise.all(promise_chars);
+                let idx = 0;
+                let addElem;
+                for(const c of char_cell) {
+                    c.textContent = c.textContent + ` (${resolved_chars[idx]})`;
+                    addElem = c.nextElementSibling.nextElementSibling;
+                    if(c.parentElement.parentElement.parentElement.parentElement.id === 'ban-holder') {
+                        addElem.innerHTML = addElem.innerHTML + '<span id="addToPost" data-eva="plus-outline" data-eva-fill="green" data-eva-height="18" data-eva-animation="pulse" data-eva-hover="false" data-eva-infinite="true" style="float:right;"></span>';
+                    }
+                    idx++;
+                }
+                eva.replace();
+                const addToPostElem = $('#addToPost').get(0);
+                if(addToPostElem) {
+                    addToPostElem.addEventListener('click', () => {
+                        addToPost(addToPostElem.parentElement.previousElementSibling.previousElementSibling as HTMLElement);
+                    });
+                }
+            }
+        }
 
     } else if(window.location.host === "ls-rp.com") {
         const navbar_img = document.getElementsByTagName('img');
@@ -901,7 +1050,7 @@ function isPlayerLoggedIntoUCP() {
     });
 }
 
-async function getAdminRecord(name) {
+async function getAdminRecord(name: string): Promise<Record<string, unknown>> {
     const prom = new Promise<string>((resolve) => {
         chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'lookup', lookup_target: name }, (response) => { 
             resolve(response.lookup);
@@ -911,7 +1060,8 @@ async function getAdminRecord(name) {
     rawdata = rawdata.replace(/<img/g, '<noload').replace(/<\/img/g, '</noload');
     const data = $(rawdata);
     const currently_banned = data.text().includes('LEVEL: -999');
-    const html = data.find('.table');
+    const html = data.find('table');
+    $(html).find('caption').remove();
     const res = [];
     if(data.text().includes('This user is not registered and not listed in our database')) {
         res[0] = "User not found";
@@ -940,11 +1090,7 @@ async function findNameChanges(name) {
     return new_name;
 }
 
-async function createAdminRecord(): Promise<void> {
-    
-}
-
-async function getUsername(character) {
+async function getUsername(character): Promise<string> {
     const prom = new Promise<string>((resolve) => {
         chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'lookup', lookup_target: character, }, (response) => { 
             resolve(response.lookup);
@@ -953,24 +1099,22 @@ async function getUsername(character) {
     let rawdata = await prom;
     rawdata = rawdata.replace(/<img/g, '<noload').replace(/<\/img/g, '</noload');
     const data = $(rawdata);
-    let username;
+    let username: string;
     username = data.text();
     username = username.slice(username.indexOf('MAIN ACCOUNT USERNAME: ')+23);
     username = username.slice(0, username.indexOf(' ')-1);
     return username;
 }
 
-function addToPost(elem) {
-    let name = elem.children[0].textContent;
-    if(name.includes('(')) name = elem.children[0].textContent.split('(')[1].split(')')[0];
+function addToPost(elem: HTMLElement) {
     const textarea = document.getElementsByName('message')[0];
     if(!textarea) return;
-    let admin = '';
-    if(name.includes('(')) {
-        admin = elem.textContent.split(`(${name})`).split('<span')[0];
-        admin = admin[0] + admin[1];
-    } else admin = elem.textContent.split('<span')[0];
-    textarea.textContent = `[codefix]${admin}[/codefix]
+    
+    let name = elem.textContent;
+    if(name.includes('(')) name = name.split('(')[1].split(')')[0];
+    const row = elem.parentElement.innerText.replace(/\n/g, '').trim().replace(/\t\t\t\t\t/g, '\t');
+
+    textarea.textContent = `[codefix]${row.replace(` (${name})`, '')}[/codefix]
     ${name}'s ban.
     [quote="${name}"][/quote]`;
     textarea.scrollIntoView({
@@ -979,7 +1123,7 @@ function addToPost(elem) {
 	});
 }
 
-const findDuplicates = (arr) => {
+const findDuplicates = (arr: Array<string>) => {
 	const sorted_arr = arr.slice().sort();
 	const results = [];
 	for (let i = 0; i < sorted_arr.length - 1; i++) {
@@ -992,9 +1136,9 @@ const findDuplicates = (arr) => {
 	return results;
 }
 
-async function checkBans(elem) {
+async function checkBans(elem: Element) {
 	if(document.title !== "Los Santos Roleplay UCP • User lookup") {
-		await $.get('https://ls-rp.com/?page=profile&select=administration&option=ipscan&t=' + elem.textContent, (data) => {
+		await $.get('https://ls-rp.com/?page=profile&select=administration&option=ipscan&t=' + elem.textContent, (data: string) => {
 			if($(data).text().includes('BANNED')) {
 				if(document.title === "Los Santos Roleplay UCP • Application review") {
 					elem.outerHTML = '<a style="color:red !important;font-weight:bold;" target="_blank" href="https://ls-rp.com/?page=profile&select=administration&option=ipscan&t=' + elem.textContent + '">' + elem.textContent + '</a> - ban on IP <span data-eva="alert-triangle-outline" data-eva-fill="red" data-eva-height="18" style="float: left; margin-right: .2em;"></span><br/>';
@@ -1142,4 +1286,14 @@ function LookUpCharacter(character) {
 function round(value, precision) {
     const multiplier = Math.pow(10, precision || 0);
     return Math.round(value * multiplier) / multiplier;
+}
+
+function HideDiv(div: HTMLElement, hider: HTMLElement) {
+    if(div.style.maxHeight != Productivity.height[div.id] + "px") {
+		div.style.maxHeight = Productivity.height[div.id] + "px";
+		hider.textContent = '[HIDE]';
+	} else { 
+		div.style.maxHeight = 24 + "px";
+		hider.textContent = '[SHOW]';
+	}
 }
