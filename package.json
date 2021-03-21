@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build:contentscript-background": "NODE_ENV=production webpack --config webpack.config.js",
+    "build:contentscript-background": "webpack --mode production --config webpack.config.js",
     "build": "npm run build:contentscript-background",
-    "watch:contentscript-background": "NODE_ENV=development webpack --config webpack.config.js -w",
+    "watch:contentscript-background": "webpack --mode development --config webpack.config.js -w",
     "watch": "npm-run-all watch:*",
     "clean": "rmdir dist /S /Q && mkdir dist && copy /Y manifest.json dist >nul && Xcopy src\\assets dist\\assets\\ /EXCLUDE:excludedfileslist.txt /Y >nul",
     "prebuild": "npm run clean",
