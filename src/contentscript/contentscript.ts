@@ -185,7 +185,7 @@ window.onload = async function(): Promise<void> {
                 rtitle.getElementsByTagName('span')[0].style.color = '#00AA00';
             }
         });
-        rtitle.innerHTML = '<p style="left:10px;bottom:15px;"">' + rtitle.innerHTML + '<br /><span style="margin-left: 25px;"><font color="#6666EE"><b>productivity++</b> <a class="tester_link" target="_blank" href="https://forum.ls-rp.com/viewtopic.php?f=108&t=769836#latest"><u>(2.2.3)</u></a></font></span></p>';
+        rtitle.innerHTML = '<p style="left:10px;bottom:15px;"">' + rtitle.innerHTML + '<br /><span style="margin-left: 25px;"><font color="#6666EE"><b>productivity++</b> <a class="tester_link" target="_blank" href="https://forum.ls-rp.com/viewtopic.php?f=108&t=769836#latest"><u>(2.2.4)</u></a></font></span></p>';
         const title = document.title;
         if(title === "Los Santos Roleplay UCP • Application review") {
             const argh = document.getElementById('argh');
