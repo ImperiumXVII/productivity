@@ -42,15 +42,13 @@ window.onload = async function(): Promise<void> {
         const in_ban_appeals = (params.get('f') === "3" || $('.crumb').find('[title="Ban Appeals"]').length !== 0);
         const in_report_player = (params.get('f') === "2" || $('.crumb').find('[title="Report Player"]').length !== 0);
 
-        if(((in_ban_appeals || in_report_player) && !replying) || params.get('t') === "769836") {
+        if(((in_ban_appeals || in_report_player) && !replying) || params.get('t') === "769836" && params.get('nochange') === null) {
             const page_inner = document.getElementsByClassName('page-body-inner')[0] as HTMLElement;
             Productivity.page_body = document.getElementsByClassName('page-body')[0] as HTMLElement;
             
             Productivity.main = document.createElement('div');
             Productivity.main.id = "productivity-main";
             Productivity.main.classList.add('productivity-main')
-            Productivity.main.style.maxHeight = 2048 + 'px';
-            Productivity.height[Productivity.main.id] = 2048;
             Productivity.page_body.insertBefore(Productivity.main, page_inner);
             
             const titlediv = document.createElement('span');
@@ -69,7 +67,7 @@ window.onload = async function(): Promise<void> {
                 HideDiv(Productivity.main, Productivity.mainhider)
             });
 
-            if(params.get('t') === "769836") {
+            if(params.get('t') === "769836" && params.get('nochange') === null) {
                 const unselected = document.createElement('div');
                 unselected.id = "unselected";
                 Productivity.main.appendChild(unselected);
@@ -96,6 +94,15 @@ window.onload = async function(): Promise<void> {
                 (document.getElementsByClassName('postbody')[0] as HTMLElement).style.width = '100%';
                 (document.getElementsByClassName('content')[0] as HTMLElement).style.borderTop = 'none';
                 (document.getElementsByClassName('content')[0].getElementsByTagName('center')[0] as HTMLElement).style.display = 'none';
+                
+                const goBackLink = document.createElement('span');
+                goBackLink.id = 'goBackLink';
+                goBackLink.innerHTML = '<br /><br />> CLICK HERE TO DISABLE THIS SHITTY THEME <';
+                goBackLink.classList.add('tester_link', 'bold', 'red');
+                goBackLink.addEventListener('click', () => {
+                    window.location.search = 'f=108&t=769836&nochange';
+                });
+                (document.getElementsByClassName('content')[0].getElementsByTagName('center')[1] as HTMLElement).children[0].insertAdjacentElement('afterend', goBackLink);
             } else if(in_ban_appeals && !in_topic) {
                 const unselected = document.createElement('div');
                 unselected.id = "unselected";
@@ -117,6 +124,8 @@ window.onload = async function(): Promise<void> {
                 override_info.addEventListener('keyup', async event => {
                     if(event.key === 'Enter') {
                         await createAdminRecord(override_info.value);
+                        Productivity.main.style.maxHeight = Number(getComputedStyle(selected).height.slice(0, -2)) + selected.offsetTop + 'px';
+                        Productivity.height[Productivity.main.id] = Number(getComputedStyle(selected).height.slice(0, -2)) + selected.offsetTop;
                     }
                 })
                 lookup_override_div.appendChild(override_info);
@@ -135,6 +144,8 @@ window.onload = async function(): Promise<void> {
                     }
                 }
                 await createAdminRecord(filtered_name);
+                Productivity.main.style.maxHeight = Number(getComputedStyle(selected).height.slice(0, -2)) + selected.offsetTop + 'px';
+                Productivity.height[Productivity.main.id] = Number(getComputedStyle(selected).height.slice(0, -2)) + selected.offsetTop;
             }
         }
 
@@ -160,7 +171,7 @@ window.onload = async function(): Promise<void> {
                 rtitle.getElementsByTagName('span')[0].style.color = '#00AA00';
             }
         });
-        rtitle.innerHTML = '<p style="left:10px;bottom:15px;"">' + rtitle.innerHTML + '<br /><span style="margin-left: 25px;"><font color="#6666EE"><b>productivity++</b> <a class="tester_link" target="_blank" href="https://forum.ls-rp.com/viewtopic.php?f=108&t=769836#2.2.0"><u>(2.2.0)</u></a></font></span></p>';
+        rtitle.innerHTML = '<p style="left:10px;bottom:15px;"">' + rtitle.innerHTML + '<br /><span style="margin-left: 25px;"><font color="#6666EE"><b>productivity++</b> <a class="tester_link" target="_blank" href="https://forum.ls-rp.com/viewtopic.php?f=108&t=769836#latest"><u>(2.2.0)</u></a></font></span></p>';
         const title = document.title;
         if(title === "Los Santos Roleplay UCP • Application review") {
             const argh = document.getElementById('argh');
@@ -332,7 +343,12 @@ window.onload = async function(): Promise<void> {
                         select.id = 'charnames';
                         const option = [];
                         const char_name_array = char_names.split(', ');
-                        original_character = await findNameChanges(char_name_array[0], true, false) as string;
+                        const res = await findNameChanges(char_name_array[0], true, false);
+                        if(typeof res === "string") {
+                            original_character = res;
+                        } else {
+                            original_character = res[0];
+                        }
                         const imgs = $('.cont').find('img');
                         for(const i of imgs) {
                             if(i.src === 'https://ls-rp.com/images/go_friend.gif') {
@@ -352,7 +368,7 @@ window.onload = async function(): Promise<void> {
                                         span.setAttribute('data-eva-fill', '#0077EE');
                                         span.setAttribute('data-eva-height', '14');
                                         newdiv.insertBefore(span, newdiv.childNodes[0]);
-                                        (newdiv as HTMLAnchorElement).href = "?page=profile&select=administration&option=arch&s&cname=" + original_character;
+                                        (newdiv as HTMLAnchorElement).href = "?page=profile&select=administration&option=arch&cname=" + original_character;
                                         i.parentElement.parentElement.insertBefore(breaker, newdiv);
                                     }
                                     i.parentElement.innerHTML = '<span data-eva="link-2-outline" data-eva-fill="#0077EE" data-eva-height="14"></span>' + i.parentElement.innerHTML.replace('> ', '>');
@@ -1064,7 +1080,24 @@ async function findNameChanges(name: string, firstname = false, background_servi
     rawdata = rawdata.replace(/<img/g, '<noload').replace(/<\/img/g, '</noload');
     const data = $(rawdata);
     if(data.find('.table_sort')[0] === undefined || data.text().includes('No namechanges related to')) {
-        return ["Unknown", "1970-01-01 00:00:00"];
+        if(background_service) {
+            prom = new Promise<string>((resolve) => {
+                chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'namechanges2', lookup_target: name, }, (response) => { 
+                    resolve(response.lookup);
+                });
+            });
+        } else {
+            prom = new Promise<string>((resolve) => {
+                $.get('https://ls-rp.com/?page=profile&select=administration&option=lookup&u_lookup=Lookup+this+user&u_name=' + name, (data: string) => {
+                    resolve(data);
+                });
+            });
+        }
+        rawdata = await prom;
+        rawdata = rawdata.replace(/<img/g, '<noload').replace(/<\/img/g, '</noload');
+        const data_p = $(rawdata);
+        name = data_p.find('#dialog').get(0).childNodes[0].textContent.trim();
+        return [name, "1970-01-01 00:00:00"];
     }
     if(firstname == false) {
         const new_name = data.find('.table_sort')[0].getElementsByTagName('td')[2].textContent;
@@ -1097,8 +1130,36 @@ async function getUsername(character: string, background_service = true): Promis
     const data = $(rawdata);
     let username: string;
     username = data.text();
+    const data2 = username;
     username = username.slice(username.indexOf('MAIN ACCOUNT USERNAME: ')+23);
     username = username.slice(0, username.indexOf(' ')-1);
+    if(data2.includes('not registered and not listed')) {
+        username = (await findNameChanges(character, false, background_service))[0];
+        if(username !== "Unknown") {
+            if(background_service) {
+                prom = new Promise<string>((resolve) => {
+                    chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'lookup', lookup_target: username, }, (response) => { 
+                        resolve(response.lookup);
+                    });
+                });
+            } else {
+                prom = new Promise<string>((resolve) => {
+                    $.get('https://ls-rp.com/?page=profile&select=administration&option=lookup&u_lookup=Lookup+this+user&u_name=' + username, (data: string) => {
+                        resolve(data);
+                    });
+                });
+            }
+            rawdata = await prom;
+            rawdata = rawdata.replace(/<img/g, '<noload').replace(/<\/img/g, '</noload');
+            if($(rawdata).text().includes('not registered and not listed')) {
+                return "Unknown";
+            } else {
+                username = $(rawdata).text();
+                username = username.slice(username.indexOf('MAIN ACCOUNT USERNAME: ')+23);
+                username = username.slice(0, username.indexOf(' ')-1);
+            }
+        }
+    }
     return username;
 }
 
@@ -1289,7 +1350,7 @@ function HideDiv(div: HTMLElement, hider: HTMLElement): void {
 		div.style.maxHeight = Productivity.height[div.id] + "px";
 		hider.textContent = '[HIDE]';
 	} else { 
-		div.style.maxHeight = 24 + "px";
+		div.style.maxHeight = 32 + "px";
 		hider.textContent = '[SHOW]';
 	}
 }
@@ -1306,6 +1367,7 @@ async function findBannedCharacterStatus(name: string): Promise<Record<string, u
 }
 
 async function createAdminRecord(filtered_name: string): Promise<void> {
+    if(filtered_name.includes(' ')) filtered_name = filtered_name.replace(' ', '_');
     const result = await getAdminRecord(filtered_name, '1970-01-01 00:00:00');
     const currently_banned = document.createElement('span');
     currently_banned.classList.add('currently_');
@@ -1318,7 +1380,7 @@ async function createAdminRecord(filtered_name: string): Promise<void> {
         }
     } else {
         if(result.record[0] === "User not found") {
-            currently_banned.textContent = `${filtered_name.toUpperCase()} NOT FOUND - NO NAME CHANGES FOUND`;
+            currently_banned.innerHTML = `${filtered_name.toUpperCase()} NOT FOUND<br /><span style="color: #AA6600">NO NAME CHANGES FOUND</span>`;
             currently_banned.classList.add('_not-found');
         } else {
             if(result.name[0] as string === filtered_name) {
@@ -1329,6 +1391,7 @@ async function createAdminRecord(filtered_name: string): Promise<void> {
         }
     }
     const selected = document.getElementById('selected');
+    let plusElem!: HTMLElement;
     if(selected.innerHTML.length !== 0) {
         $(selected).children().remove();
     }
@@ -1370,26 +1433,29 @@ async function createAdminRecord(filtered_name: string): Promise<void> {
                 }
             }
             const td = tr[trs].getElementsByTagName('td');
-            if(td[0] && !addedPlus) {
-                addedPlus = true;
+            if(td[0]) {
+                if(!addedPlus) {
+                    addedPlus = true;
+                    plusElem = td[0];
+                }
                 char_cell.push(td[0]);
                 promise_chars.push(getUsername(td[0].textContent));
-            }
+            }  
             for(let tds = 0, tds2 = td.length; tds < tds2; tds++) {
                 if(tds === tds2-1) {
                     td[tds].style.display = 'none';
                 }
             }
         }
-
         const resolved_chars = await Promise.all(promise_chars);
         let idx = 0;
-        let addElem: Element;
+        const addElem = plusElem.nextElementSibling.nextElementSibling;
+        if(plusElem.parentElement.parentElement.parentElement.parentElement.id === 'ban-holder') {
+            addElem.innerHTML = addElem.innerHTML + '<span id="addToPost" data-eva="plus-outline" data-eva-fill="green" data-eva-height="18" data-eva-animation="pulse" data-eva-hover="false" data-eva-infinite="true" style="float:right;"></span>';
+        }
         for(const c of char_cell) {
-            c.textContent = c.textContent + ` (${resolved_chars[idx]})`;
-            addElem = c.nextElementSibling.nextElementSibling;
-            if(c.parentElement.parentElement.parentElement.parentElement.id === 'ban-holder') {
-                addElem.innerHTML = addElem.innerHTML + '<span id="addToPost" data-eva="plus-outline" data-eva-fill="green" data-eva-height="18" data-eva-animation="pulse" data-eva-hover="false" data-eva-infinite="true" style="float:right;"></span>';
+            if(resolved_chars[idx]) {
+                if(resolved_chars[idx] !== "Unknown") { c.innerHTML = c.innerHTML + ` <strong>(${resolved_chars[idx]})</strong>`; }
             }
             idx++;
         }
