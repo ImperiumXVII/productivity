@@ -42,7 +42,7 @@ window.onload = async function(): Promise<void> {
         const in_ban_appeals = (params.get('f') === "3" || $('.crumb').find('[title="Ban Appeals"]').length !== 0);
         const in_report_player = (params.get('f') === "2" || $('.crumb').find('[title="Report Player"]').length !== 0);
 
-        if(((in_ban_appeals || in_report_player) && !replying) || params.get('t') === "769836" && params.get('nochange') === null) {
+        if(((in_ban_appeals || in_report_player) && !replying) || params.get('t') === "769836" && params.get('change') !== null) {
             const page_inner = document.getElementsByClassName('page-body-inner')[0] as HTMLElement;
             Productivity.page_body = document.getElementsByClassName('page-body')[0] as HTMLElement;
             
@@ -78,7 +78,7 @@ window.onload = async function(): Promise<void> {
 
             } else {
 
-                if(params.get('t') === "769836" && params.get('nochange') === null) {
+                if(params.get('t') === "769836" && params.get('change') !== null) {
                     const unselected = document.createElement('div');
                     unselected.id = "unselected";
                     Productivity.main.appendChild(unselected);
@@ -111,7 +111,7 @@ window.onload = async function(): Promise<void> {
                     goBackLink.innerHTML = '<br /><br />> CLICK HERE TO DISABLE THIS SHITTY THEME <';
                     goBackLink.classList.add('tester_link', 'bold', 'red');
                     goBackLink.addEventListener('click', () => {
-                        window.location.search = 'f=108&t=769836&nochange';
+                        window.location.search = 'f=108&t=769836';
                     });
                     (document.getElementsByClassName('content')[0].getElementsByTagName('center')[1] as HTMLElement).children[0].insertAdjacentElement('afterend', goBackLink);
                 } else if(in_ban_appeals && !in_topic) {
@@ -185,7 +185,7 @@ window.onload = async function(): Promise<void> {
                 rtitle.getElementsByTagName('span')[0].style.color = '#00AA00';
             }
         });
-        rtitle.innerHTML = '<p style="left:10px;bottom:15px;"">' + rtitle.innerHTML + '<br /><span style="margin-left: 25px;"><font color="#6666EE"><b>productivity++</b> <a class="tester_link" target="_blank" href="https://forum.ls-rp.com/viewtopic.php?f=108&t=769836#latest"><u>(2.2.5.1)</u></a></font></span></p>';
+        rtitle.innerHTML = '<p style="left:10px;bottom:15px;"">' + rtitle.innerHTML + '<br /><span style="margin-left: 25px;"><font color="#6666EE"><b>productivity++</b> <a class="tester_link" target="_blank" href="https://forum.ls-rp.com/viewtopic.php?f=108&t=769836#latest"><u>(2.2.5.2)</u></a></font></span></p>';
         const title = document.title;
         if(title === "Los Santos Roleplay UCP • Application review") {
             const argh = document.getElementById('argh');
