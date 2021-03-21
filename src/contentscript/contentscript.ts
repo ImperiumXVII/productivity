@@ -37,7 +37,7 @@ window.onload = async function(): Promise<void> {
 
         const params = new URLSearchParams(window.location.search);
         const in_topic = (params.get('t') !== null || params.get('p') !== null);
-        const replying = params.get('mode') === "reply" || params.get('mode') === "move";
+        const replying = params.get('mode') === "reply" || params.get('action') === "move";
 
         const in_ban_appeals = (params.get('f') === "3" || $('.crumb').find('[title="Ban Appeals"]').length !== 0);
         const in_report_player = (params.get('f') === "2" || $('.crumb').find('[title="Report Player"]').length !== 0);
@@ -143,6 +143,7 @@ window.onload = async function(): Promise<void> {
                         break;
                     }
                 }
+                filtered_name = filtered_name.replace(/\./g, '');
                 await createAdminRecord(filtered_name);
                 Productivity.main.style.maxHeight = Number(getComputedStyle(selected).height.slice(0, -2)) + selected.offsetTop + 'px';
                 Productivity.height[Productivity.main.id] = Number(getComputedStyle(selected).height.slice(0, -2)) + selected.offsetTop;
@@ -1448,24 +1449,26 @@ async function createAdminRecord(filtered_name: string): Promise<void> {
                 }
             }
         }
-        const resolved_chars = await Promise.all(promise_chars);
-        let idx = 0;
-        const addElem = plusElem.nextElementSibling.nextElementSibling;
-        if(plusElem.parentElement.parentElement.parentElement.parentElement.id === 'ban-holder') {
-            addElem.innerHTML = addElem.innerHTML + '<span id="addToPost" data-eva="plus-outline" data-eva-fill="green" data-eva-height="18" data-eva-animation="pulse" data-eva-hover="false" data-eva-infinite="true" style="float:right;"></span>';
-        }
-        for(const c of char_cell) {
-            if(resolved_chars[idx]) {
-                if(resolved_chars[idx] !== "Unknown") { c.innerHTML = c.innerHTML + ` <strong>(${resolved_chars[idx]})</strong>`; }
+        if(promise_chars.length !== 0) {
+            const resolved_chars = await Promise.all(promise_chars);
+            let idx = 0;
+            const addElem = plusElem.nextElementSibling.nextElementSibling;
+            if(plusElem.parentElement.parentElement.parentElement.parentElement.id === 'ban-holder') {
+                addElem.innerHTML = addElem.innerHTML + '<span id="addToPost" data-eva="plus-outline" data-eva-fill="green" data-eva-height="18" data-eva-animation="pulse" data-eva-hover="false" data-eva-infinite="true" style="float:right;"></span>';
             }
-            idx++;
-        }
-        eva.replace();
-        const addToPostElem = $('#addToPost').get(0);
-        if(addToPostElem) {
-            addToPostElem.addEventListener('click', () => {
-                addToPost(addToPostElem.parentElement.previousElementSibling.previousElementSibling as HTMLElement);
-            });
+            for(const c of char_cell) {
+                if(resolved_chars[idx]) {
+                    if(resolved_chars[idx] !== "Unknown") { c.innerHTML = c.innerHTML + ` <strong>(${resolved_chars[idx]})</strong>`; }
+                }
+                idx++;
+            }
+            eva.replace();
+            const addToPostElem = $('#addToPost').get(0);
+            if(addToPostElem) {
+                addToPostElem.addEventListener('click', () => {
+                    addToPost(addToPostElem.parentElement.previousElementSibling.previousElementSibling as HTMLElement);
+                });
+            }
         }
     }
 }
