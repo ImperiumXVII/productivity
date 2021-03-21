@@ -185,7 +185,7 @@ window.onload = async function(): Promise<void> {
                 rtitle.getElementsByTagName('span')[0].style.color = '#00AA00';
             }
         });
-        rtitle.innerHTML = '<p style="left:10px;bottom:15px;"">' + rtitle.innerHTML + '<br /><span style="margin-left: 25px;"><font color="#6666EE"><b>productivity++</b> <a class="tester_link" target="_blank" href="https://forum.ls-rp.com/viewtopic.php?f=108&t=769836#latest"><u>(2.2.4)</u></a></font></span></p>';
+        rtitle.innerHTML = '<p style="left:10px;bottom:15px;"">' + rtitle.innerHTML + '<br /><span style="margin-left: 25px;"><font color="#6666EE"><b>productivity++</b> <a class="tester_link" target="_blank" href="https://forum.ls-rp.com/viewtopic.php?f=108&t=769836#latest"><u>(2.2.5)</u></a></font></span></p>';
         const title = document.title;
         if(title === "Los Santos Roleplay UCP • Application review") {
             const argh = document.getElementById('argh');
@@ -1087,6 +1087,7 @@ async function getAdminRecord(name: string, date: string): Promise<Record<string
 }
 
 async function findNameChanges(name: string, firstname = false, background_service = true): Promise<string[] | string> {
+    if(name === "SYSTEM") return "SYSTEM";
     let prom: Promise<string>;
     if(background_service) {
         prom = new Promise<string>((resolve) => {
@@ -1104,10 +1105,10 @@ async function findNameChanges(name: string, firstname = false, background_servi
     let rawdata = await prom;
     rawdata = rawdata.replace(/<img/g, '<noload').replace(/<\/img/g, '</noload');
     const data = $(rawdata);
-    if(data.find('.table_sort')[0] === undefined || data.text().includes('No namechanges related to')) {
+    if(data.find('.table_sort').get(0) === undefined || data.text().includes('No namechanges related to')) {
         if(background_service) {
             prom = new Promise<string>((resolve) => {
-                chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'namechanges2', lookup_target: name, }, (response) => { 
+                chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'lookup', lookup_target: name, }, (response) => { 
                     resolve(response.lookup);
                 });
             });
