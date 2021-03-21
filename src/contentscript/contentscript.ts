@@ -67,90 +67,103 @@ window.onload = async function(): Promise<void> {
                 HideDiv(Productivity.main, Productivity.mainhider)
             });
 
-            if(params.get('t') === "769836" && params.get('nochange') === null) {
+            if(!(await isUserLoggedIn())) {
+
                 const unselected = document.createElement('div');
                 unselected.id = "unselected";
                 Productivity.main.appendChild(unselected);
-                Productivity.main.style.backgroundColor = '#1F1F1F';
-                unselected.textContent = "Hey! It's my home! Thanks for checking back!";
-                unselected.style.color = '#F1F1F1';
-                unselected.style.marginBottom = '30px';
-                Productivity.mainhider.style.display = 'none';
-                const child = document.getElementsByClassName('page-body-inner')[0];
-                Productivity.main.appendChild(child);
-                Productivity.main.style.maxHeight = '';
-                (document.getElementById('message-box').children[0] as HTMLTextAreaElement).placeholder = 'Say something nice about ImperiumXVII? 😊';
-                const icons = document.getElementsByClassName('icon-black');
-                for(let icon = 0, iconlen = icons.length; icon < iconlen; icon++) {
-                    if(icons[icon] === undefined) continue;
-                    icons[icon].classList.add('icon-grey');
-                    icons[icon].classList.remove('icon-black');
-                }
-                document.getElementById('phpbb').style.backgroundColor = '#77A';
-                (document.getElementsByClassName('postprofile')[0] as HTMLElement).style.display = 'none';
-                (document.getElementsByClassName('first')[0] as HTMLElement).style.display = 'none';
-                (document.getElementsByClassName('author')[0] as HTMLElement).style.display = 'none';
-                (document.getElementsByClassName('action-bar')[0] as HTMLElement).style.display = 'none';
-                (document.getElementsByClassName('postbody')[0] as HTMLElement).style.width = '100%';
-                (document.getElementsByClassName('content')[0] as HTMLElement).style.borderTop = 'none';
-                (document.getElementsByClassName('content')[0].getElementsByTagName('center')[0] as HTMLElement).style.display = 'none';
-                
-                const goBackLink = document.createElement('span');
-                goBackLink.id = 'goBackLink';
-                goBackLink.innerHTML = '<br /><br />> CLICK HERE TO DISABLE THIS SHITTY THEME <';
-                goBackLink.classList.add('tester_link', 'bold', 'red');
-                goBackLink.addEventListener('click', () => {
-                    window.location.search = 'f=108&t=769836&nochange';
-                });
-                (document.getElementsByClassName('content')[0].getElementsByTagName('center')[1] as HTMLElement).children[0].insertAdjacentElement('afterend', goBackLink);
-            } else if(in_ban_appeals && !in_topic) {
-                const unselected = document.createElement('div');
-                unselected.id = "unselected";
-                Productivity.main.appendChild(unselected);
-                unselected.textContent = "No ban appeal open.";
+                unselected.innerHTML = "You must be logged in on <i>ls-rp.com</i> to use this extension.";
                 Productivity.main.style.maxHeight = Productivity.main.offsetHeight + 'px';
                 Productivity.height[Productivity.main.id] = Productivity.main.offsetHeight;
-            } else if(in_ban_appeals && in_topic) {
-                const selected = document.createElement('div');
-                selected.id = "selected";
-                Productivity.main.appendChild(selected);
-                const lookup_override_div = document.createElement('div');
-                lookup_override_div.classList.add('lookup_override_div');
-                lookup_override_div.id = 'lookup_override_div';
-                const override_info = document.createElement('input');
-                override_info.id = 'override_info';
-                override_info.type = "search";
-                override_info.placeholder = 'Lookup another character...';
-                override_info.addEventListener('keyup', async event => {
-                    if(event.key === 'Enter') {
-                        await createAdminRecord(override_info.value);
-                        Productivity.main.style.maxHeight = Number(getComputedStyle(selected).height.slice(0, -2)) + selected.offsetTop + 'px';
-                        Productivity.height[Productivity.main.id] = Number(getComputedStyle(selected).height.slice(0, -2)) + selected.offsetTop;
+
+            } else {
+
+                if(params.get('t') === "769836" && params.get('nochange') === null) {
+                    const unselected = document.createElement('div');
+                    unselected.id = "unselected";
+                    Productivity.main.appendChild(unselected);
+                    Productivity.main.style.backgroundColor = '#1F1F1F';
+                    unselected.textContent = "Hey! It's my home! Thanks for checking back!";
+                    unselected.style.color = '#F1F1F1';
+                    unselected.style.marginBottom = '30px';
+                    Productivity.mainhider.style.display = 'none';
+                    const child = document.getElementsByClassName('page-body-inner')[0];
+                    Productivity.main.appendChild(child);
+                    Productivity.main.style.maxHeight = '';
+                    (document.getElementById('message-box').children[0] as HTMLTextAreaElement).placeholder = 'Say something nice about ImperiumXVII? 😊';
+                    const icons = document.getElementsByClassName('icon-black');
+                    for(let icon = 0, iconlen = icons.length; icon < iconlen; icon++) {
+                        if(icons[icon] === undefined) continue;
+                        icons[icon].classList.add('icon-grey');
+                        icons[icon].classList.remove('icon-black');
                     }
-                })
-                lookup_override_div.appendChild(override_info);
-                Productivity.main.insertBefore(lookup_override_div, selected);
-                const first_line = $('.content').text().split('\n')[0];
-                const unfiltered_name = first_line.split(':')[1].trim();
-                let filtered_name = unfiltered_name;
-                if(!unfiltered_name.includes('_')) {
-                    filtered_name = unfiltered_name.replace(' ', '_');
-                }
-                const filtered_names = filtered_name.split(' ');
-                for(const f of filtered_names) {
-                    if(f.includes('_')) {
-                        filtered_name = f;
-                        break;
+                    document.getElementById('phpbb').style.backgroundColor = '#77A';
+                    (document.getElementsByClassName('postprofile')[0] as HTMLElement).style.display = 'none';
+                    (document.getElementsByClassName('first')[0] as HTMLElement).style.display = 'none';
+                    (document.getElementsByClassName('author')[0] as HTMLElement).style.display = 'none';
+                    (document.getElementsByClassName('action-bar')[0] as HTMLElement).style.display = 'none';
+                    (document.getElementsByClassName('postbody')[0] as HTMLElement).style.width = '100%';
+                    (document.getElementsByClassName('content')[0] as HTMLElement).style.borderTop = 'none';
+                    (document.getElementsByClassName('content')[0].getElementsByTagName('center')[0] as HTMLElement).style.display = 'none';
+                    
+                    const goBackLink = document.createElement('span');
+                    goBackLink.id = 'goBackLink';
+                    goBackLink.innerHTML = '<br /><br />> CLICK HERE TO DISABLE THIS SHITTY THEME <';
+                    goBackLink.classList.add('tester_link', 'bold', 'red');
+                    goBackLink.addEventListener('click', () => {
+                        window.location.search = 'f=108&t=769836&nochange';
+                    });
+                    (document.getElementsByClassName('content')[0].getElementsByTagName('center')[1] as HTMLElement).children[0].insertAdjacentElement('afterend', goBackLink);
+                } else if(in_ban_appeals && !in_topic) {
+                    const unselected = document.createElement('div');
+                    unselected.id = "unselected";
+                    Productivity.main.appendChild(unselected);
+                    unselected.textContent = "No ban appeal open.";
+                    Productivity.main.style.maxHeight = Productivity.main.offsetHeight + 'px';
+                    Productivity.height[Productivity.main.id] = Productivity.main.offsetHeight;
+                } else if(in_ban_appeals && in_topic) {
+                    const selected = document.createElement('div');
+                    selected.id = "selected";
+                    Productivity.main.appendChild(selected);
+                    const lookup_override_div = document.createElement('div');
+                    lookup_override_div.classList.add('lookup_override_div');
+                    lookup_override_div.id = 'lookup_override_div';
+                    const override_info = document.createElement('input');
+                    override_info.id = 'override_info';
+                    override_info.type = "search";
+                    override_info.placeholder = 'Lookup another character...';
+                    override_info.addEventListener('keyup', async event => {
+                        if(event.key === 'Enter') {
+                            await createAdminRecord(override_info.value);
+                            Productivity.main.style.maxHeight = Number(getComputedStyle(selected).height.slice(0, -2)) + selected.offsetTop + 'px';
+                            Productivity.height[Productivity.main.id] = Number(getComputedStyle(selected).height.slice(0, -2)) + selected.offsetTop;
+                        }
+                    })
+                    lookup_override_div.appendChild(override_info);
+                    Productivity.main.insertBefore(lookup_override_div, selected);
+                    const first_line = $('.content').text().split('\n')[0];
+                    const unfiltered_name = first_line.split(':')[1].trim();
+                    let filtered_name = unfiltered_name;
+                    if(!unfiltered_name.includes('_')) {
+                        filtered_name = unfiltered_name.replace(' ', '_');
                     }
+                    const filtered_names = filtered_name.split(' ');
+                    for(const f of filtered_names) {
+                        if(f.includes('_')) {
+                            filtered_name = f;
+                            break;
+                        }
+                    }
+                    filtered_name = filtered_name.replace(/\./g, '');
+                    await createAdminRecord(filtered_name);
+                    Productivity.main.style.maxHeight = Number(getComputedStyle(selected).height.slice(0, -2)) + selected.offsetTop + 'px';
+                    Productivity.height[Productivity.main.id] = Number(getComputedStyle(selected).height.slice(0, -2)) + selected.offsetTop;
                 }
-                filtered_name = filtered_name.replace(/\./g, '');
-                await createAdminRecord(filtered_name);
-                Productivity.main.style.maxHeight = Number(getComputedStyle(selected).height.slice(0, -2)) + selected.offsetTop + 'px';
-                Productivity.height[Productivity.main.id] = Number(getComputedStyle(selected).height.slice(0, -2)) + selected.offsetTop;
             }
         }
 
     } else if(window.location.host === "ls-rp.com") {
+        if(!(await isUserLoggedIn())) return;
         const navbar_img = document.getElementsByTagName('img');
         for(let n = 0, n2 = navbar_img.length; n < n2; n++) {
             if(navbar_img[n] === undefined) continue;
@@ -172,7 +185,7 @@ window.onload = async function(): Promise<void> {
                 rtitle.getElementsByTagName('span')[0].style.color = '#00AA00';
             }
         });
-        rtitle.innerHTML = '<p style="left:10px;bottom:15px;"">' + rtitle.innerHTML + '<br /><span style="margin-left: 25px;"><font color="#6666EE"><b>productivity++</b> <a class="tester_link" target="_blank" href="https://forum.ls-rp.com/viewtopic.php?f=108&t=769836#latest"><u>(2.2.2)</u></a></font></span></p>';
+        rtitle.innerHTML = '<p style="left:10px;bottom:15px;"">' + rtitle.innerHTML + '<br /><span style="margin-left: 25px;"><font color="#6666EE"><b>productivity++</b> <a class="tester_link" target="_blank" href="https://forum.ls-rp.com/viewtopic.php?f=108&t=769836#latest"><u>(2.2.3)</u></a></font></span></p>';
         const title = document.title;
         if(title === "Los Santos Roleplay UCP • Application review") {
             const argh = document.getElementById('argh');
@@ -1036,6 +1049,16 @@ function HideAnn(id: string | number) {
 		document.getElementById('notice'+id).style.maxHeight = 24 + "px";
 		document.getElementById('hide'+id).textContent = '[SHOW]';
 	}
+}
+
+async function isUserLoggedIn(): Promise<boolean> { 
+    const prom = new Promise<boolean>((resolve) => {
+        chrome.runtime.sendMessage(chrome.runtime.id, { msg: 'check_ucp' }, (response) => { 
+            resolve(response.loggedIn);
+        });
+    });
+    const loggedIn = await prom;
+    return loggedIn;
 }
 
 async function getAdminRecord(name: string, date: string): Promise<Record<string, unknown>> {
