@@ -1,6 +1,6 @@
 {
     "name": "productivity++",
-    "version": "2.2.5.1",
+    "version": "2.2.5.2",
     "description": "Returns formatting (paragraphs, etc.) to character applications, adds IP checker, and more",
     "manifest_version": 2,
     "content_scripts": [
