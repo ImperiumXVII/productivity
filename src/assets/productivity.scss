@@ -129,6 +129,18 @@ ul.menu {
 
 }
 
+html.ucp {
+    overflow-x: hidden;
+}
+
+h4.post-title.left {
+    width: revert !important;
+}
+
+#twitterfeed {
+    right: -26% !important;
+}
+
 div {
 
     &#content {
@@ -144,6 +156,7 @@ div {
     }
 
     &#container {
+        max-width: 100%;
         width: 1280px !important;
     }
 

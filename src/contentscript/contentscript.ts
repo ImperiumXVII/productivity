@@ -171,7 +171,7 @@ window.onload = async function(): Promise<void> {
                 rtitle.getElementsByTagName('span')[0].style.color = '#00AA00';
             }
         });
-        rtitle.innerHTML = '<p style="left:10px;bottom:15px;"">' + rtitle.innerHTML + '<br /><span style="margin-left: 25px;"><font color="#6666EE"><b>productivity++</b> <a class="tester_link" target="_blank" href="https://forum.ls-rp.com/viewtopic.php?f=108&t=769836#latest"><u>(2.2.0)</u></a></font></span></p>';
+        rtitle.innerHTML = '<p style="left:10px;bottom:15px;"">' + rtitle.innerHTML + '<br /><span style="margin-left: 25px;"><font color="#6666EE"><b>productivity++</b> <a class="tester_link" target="_blank" href="https://forum.ls-rp.com/viewtopic.php?f=108&t=769836#latest"><u>(2.2.2)</u></a></font></span></p>';
         const title = document.title;
         if(title === "Los Santos Roleplay UCP • Application review") {
             const argh = document.getElementById('argh');
@@ -847,6 +847,7 @@ window.onload = async function(): Promise<void> {
                 ip.innerHTML = ip.innerHTML + ' <a style="float: right;margin-left: 5px;" target="_blank" class="tester_link" href="https://ls-rp.com/?page=profile&select=administration&option=ipscan&t=' + ip.textContent.slice(0, ip.textContent.slice(0, ip.textContent.lastIndexOf('.')).lastIndexOf('.')) + '.">/16</a> <a style="float: right;" target="_blank" class="tester_link" href="https://ls-rp.com/?page=profile&select=administration&option=ipscan&t=' + ip.textContent.slice(0, ip.textContent.lastIndexOf('.')) + '.">/24</a>';
             }
         } else if(title === "Los Santos Roleplay UCP • Applications Overview") {
+            document.getElementsByTagName('html')[0].classList.add('ucp');
             if(tester_name.includes('_Test')) {
                 const page = document.getElementsByClassName('cont')[0];
                 const pos = page.getElementsByTagName('center')[0];
